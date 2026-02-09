@@ -1,26 +1,28 @@
-/* GET ELEMENTS */
+/* ELEMENTS */
 const form = document.getElementById("productForm");
 const table = document.getElementById("productTable");
 
-// ⚠️ Define inputs so we can use .value safely
 const nameInput = document.getElementById("name");
 const quantityInput = document.getElementById("quantity");
 const expiryInput = document.getElementById("expiry");
 
-let products = [];
+/* LOAD FROM LOCALSTORAGE */
+let products = JSON.parse(localStorage.getItem("products")) || [];
 let editIndex = null;
+
+/* INITIAL DISPLAY */
+displayProducts();
 
 /* SUBMIT */
 form.addEventListener("submit", e => {
   e.preventDefault();
 
   const product = {
-    name: nameInput.value,
+    name: nameInput.value.trim(),
     quantity: Number(quantityInput.value),
     expiry: expiryInput.value
   };
 
-  // Prevent blank entries
   if (!product.name || !product.quantity || !product.expiry) {
     alert("Please fill out all fields");
     return;
@@ -33,6 +35,7 @@ form.addEventListener("submit", e => {
     editIndex = null;
   }
 
+  saveToStorage();
   form.reset();
   displayProducts();
 });
@@ -74,6 +77,7 @@ function editProduct(i) {
 function deleteProduct(i) {
   if (confirm("Are you sure you want to delete this product?")) {
     products.splice(i, 1);
+    saveToStorage();
     displayProducts();
   }
 }
@@ -84,6 +88,11 @@ function getStatus(q, d) {
   if (q <= 3) return "⚠ Low Stock";
   if (diff <= 7) return "⏰ Expiring Soon";
   return "✅ OK";
+}
+
+/* SAVE */
+function saveToStorage() {
+  localStorage.setItem("products", JSON.stringify(products));
 }
 
 /* LOGOUT */
