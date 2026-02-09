@@ -1,7 +1,8 @@
+/* GET ELEMENTS */
 const form = document.getElementById("productForm");
 const table = document.getElementById("productTable");
 
-// ✅ FIX: define inputs
+// ⚠️ Define inputs so we can use .value safely
 const nameInput = document.getElementById("name");
 const quantityInput = document.getElementById("quantity");
 const expiryInput = document.getElementById("expiry");
@@ -19,13 +20,15 @@ form.addEventListener("submit", e => {
     expiry: expiryInput.value
   };
 
+  // Prevent blank entries
   if (!product.name || !product.quantity || !product.expiry) {
     alert("Please fill out all fields");
     return;
   }
 
-  if (editIndex === null) products.push(product);
-  else {
+  if (editIndex === null) {
+    products.push(product);
+  } else {
     products[editIndex] = product;
     editIndex = null;
   }
