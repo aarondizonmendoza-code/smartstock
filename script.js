@@ -1,6 +1,11 @@
 const form = document.getElementById("productForm");
 const table = document.getElementById("productTable");
 
+// ✅ FIX: define inputs
+const nameInput = document.getElementById("name");
+const quantityInput = document.getElementById("quantity");
+const expiryInput = document.getElementById("expiry");
+
 let products = [];
 let editIndex = null;
 
@@ -9,10 +14,15 @@ form.addEventListener("submit", e => {
   e.preventDefault();
 
   const product = {
-    name: name.value,
-    quantity: Number(quantity.value),
-    expiry: expiry.value
+    name: nameInput.value,
+    quantity: Number(quantityInput.value),
+    expiry: expiryInput.value
   };
+
+  if (!product.name || !product.quantity || !product.expiry) {
+    alert("Please fill out all fields");
+    return;
+  }
 
   if (editIndex === null) products.push(product);
   else {
@@ -30,8 +40,9 @@ function displayProducts() {
 
   products.forEach((p, i) => {
     const status = getStatus(p.quantity, p.expiry);
-    const cls = status.includes("Low") ? "low-stock" :
-                status.includes("Expiring") ? "expiring" : "good";
+    const cls =
+      status.includes("Low") ? "low-stock" :
+      status.includes("Expiring") ? "expiring" : "good";
 
     table.innerHTML += `
       <tr>
@@ -50,9 +61,9 @@ function displayProducts() {
 
 /* EDIT */
 function editProduct(i) {
-  name.value = products[i].name;
-  quantity.value = products[i].quantity;
-  expiry.value = products[i].expiry;
+  nameInput.value = products[i].name;
+  quantityInput.value = products[i].quantity;
+  expiryInput.value = products[i].expiry;
   editIndex = i;
 }
 
