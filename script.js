@@ -42,27 +42,30 @@ form.addEventListener("submit", e => {
 
 /* DISPLAY */
 function displayProducts() {
+  const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
   table.innerHTML = "";
 
-  products.forEach((p, i) => {
-    const status = getStatus(p.quantity, p.expiry);
-    const cls =
-      status.includes("Low") ? "low-stock" :
-      status.includes("Expiring") ? "expiring" : "good";
+  products
+    .filter(p => p.name.toLowerCase().includes(search))
+    .forEach((p, i) => {
+      const status = getStatus(p.quantity, p.expiry);
+      const cls =
+        status.includes("Low") ? "low-stock" :
+        status.includes("Expiring") ? "expiring" : "good";
 
-    table.innerHTML += `
-      <tr>
-        <td>${p.name}</td>
-        <td>${p.quantity}</td>
-        <td>${p.expiry}</td>
-        <td class="${cls}">${status}</td>
-        <td>
-          <button onclick="editProduct(${i})">Edit</button>
-          <button onclick="deleteProduct(${i})">Delete</button>
-        </td>
-      </tr>
-    `;
-  });
+      table.innerHTML += `
+        <tr>
+          <td>${p.name}</td>
+          <td>${p.quantity}</td>
+          <td>${p.expiry}</td>
+          <td class="${cls}">${status}</td>
+          <td>
+            <button onclick="editProduct(${i})">Edit</button>
+            <button onclick="deleteProduct(${i})">Delete</button>
+          </td>
+        </tr>
+      `;
+    });
 }
 
 /* EDIT */
@@ -90,7 +93,7 @@ function getStatus(q, d) {
   return "✅ OK";
 }
 
-/* SAVE */
+/* SAVE TO LOCALSTORAGE */
 function saveToStorage() {
   localStorage.setItem("products", JSON.stringify(products));
 }

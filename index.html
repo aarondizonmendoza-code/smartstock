@@ -23,6 +23,7 @@
 
 <main class="container">
 
+  <!-- Product Form Section -->
   <section class="form-section">
     <h2>Add / Update Product</h2>
 
@@ -40,8 +41,17 @@
     </form>
   </section>
 
+  <!-- Inventory Table Section -->
   <section class="table-section">
     <h2>Inventory List</h2>
+
+    <!-- Search Bar -->
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search product..."
+      onkeyup="displayProducts()"
+    />
 
     <div class="table-wrapper">
       <table>
