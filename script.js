@@ -2,7 +2,7 @@
 const owner = "aarondizonmendoza-code";
 const repo = "smartstock";
 const path = "products.json";
-const token = "YOUR_GITHUB_PAT"; // Replace with your GitHub Personal Access Token
+const token = "arnmdz";
 const apiURL = https://api.github.com/repos/${owner}/${repo}/contents/${path};
 
 const form = document.getElementById("productForm");
@@ -134,3 +134,4 @@ async function deleteProduct(id) {
 
 // ================== INITIAL LOAD ==================
 loadProducts();
+
