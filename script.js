@@ -1,105 +1,129 @@
-/* ELEMENTS */
+// ================== CONFIG ==================
+const owner = "aarondizonmendoza-code";
+const repo = "smartstock";
+const path = "products.json";
+const token = "YOUR_GITHUB_PAT"; // Replace with your GitHub token
+const apiURL = https://api.github.com/repos/${owner}/${repo}/contents/${path};
+
 const form = document.getElementById("productForm");
 const table = document.getElementById("productTable");
 
-const nameInput = document.getElementById("name");
-const quantityInput = document.getElementById("quantity");
-const expiryInput = document.getElementById("expiry");
+let sha;      // GitHub file SHA needed to update
+let editId = null;
 
-/* LOAD FROM LOCALSTORAGE */
-let products = JSON.parse(localStorage.getItem("products")) || [];
-let editIndex = null;
-
-/* INITIAL DISPLAY */
-displayProducts();
-
-/* SUBMIT */
-form.addEventListener("submit", e => {
-  e.preventDefault();
-
-  const product = {
-    name: nameInput.value.trim(),
-    quantity: Number(quantityInput.value),
-    expiry: expiryInput.value
-  };
-
-  if (!product.name || !product.quantity || !product.expiry) {
-    alert("Please fill out all fields");
-    return;
-  }
-
-  if (editIndex === null) {
-    products.push(product);
-  } else {
-    products[editIndex] = product;
-    editIndex = null;
-  }
-
-  saveToStorage();
-  form.reset();
-  displayProducts();
-});
-
-/* DISPLAY */
-function displayProducts() {
-  const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
-  table.innerHTML = "";
-
-  products
-    .filter(p => p.name.toLowerCase().includes(search))
-    .forEach((p, i) => {
-      const status = getStatus(p.quantity, p.expiry);
-      const cls =
-        status.includes("Low") ? "low-stock" :
-        status.includes("Expiring") ? "expiring" : "good";
-
-      table.innerHTML += `
-        <tr>
-          <td>${p.name}</td>
-          <td>${p.quantity}</td>
-          <td>${p.expiry}</td>
-          <td class="${cls}">${status}</td>
-          <td>
-            <button onclick="editProduct(${i})">Edit</button>
-            <button onclick="deleteProduct(${i})">Delete</button>
-          </td>
-        </tr>
-      `;
+// ================== LOAD PRODUCTS ==================
+async function loadProducts() {
+  try {
+    const res = await fetch(apiURL, {
+      headers: { Authorization: token ${token} }
     });
-}
-
-/* EDIT */
-function editProduct(i) {
-  nameInput.value = products[i].name;
-  quantityInput.value = products[i].quantity;
-  expiryInput.value = products[i].expiry;
-  editIndex = i;
-}
-
-/* DELETE */
-function deleteProduct(i) {
-  if (confirm("Are you sure you want to delete this product?")) {
-    products.splice(i, 1);
-    saveToStorage();
-    displayProducts();
+    const data = await res.json();
+    sha = data.sha; // store SHA for updates
+    const content = atob(data.content); // decode base64
+    const products = JSON.parse(content);
+    displayProducts(products);
+    return products;
+  } catch (err) {
+    console.error("Error loading products:", err);
+    return [];
   }
 }
 
-/* STATUS */
-function getStatus(q, d) {
-  const diff = (new Date(d) - new Date()) / 86400000;
-  if (q <= 3) return "⚠ Low Stock";
-  if (diff <= 7) return "⏰ Expiring Soon";
+// ================== DISPLAY PRODUCTS ==================
+function displayProducts(products) {
+  table.innerHTML = "";
+  products.forEach(p => {
+    const status = getStatus(p.quantity, p.expiry);
+    const cssClass = status.includes("Low") ? "low-stock" : status.includes("Expiring") ? "expiring" : "good";
+
+    table.innerHTML += `
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.quantity}</td>
+        <td>${p.expiry}</td>
+        <td class="${cssClass}">${status}</td>
+        <td>
+          <button onclick="editProduct(${p.id})">Edit</button>
+          <button onclick="deleteProduct(${p.id})">Delete</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+// ================== STATUS CHECK ==================
+function getStatus(quantity, expiry) {
+  const diffDays = (new Date(expiry) - new Date()) / 86400000;
+  if (quantity <= 5) return "⚠ Low Stock";
+  if (diffDays <= 7) return "⏰ Expiring Soon";
   return "✅ OK";
 }
 
-/* SAVE TO LOCALSTORAGE */
-function saveToStorage() {
-  localStorage.setItem("products", JSON.stringify(products));
+// ================== SAVE PRODUCTS TO GITHUB ==================
+async function saveProducts(products, message = "Update products") {
+  try {
+    const res = await fetch(apiURL, {
+      method: "PUT",
+      headers: {
+        Authorization: token ${token},
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: message,
+        content: btoa(JSON.stringify(products, null, 2)), // encode JSON to base64
+        sha: sha
+      })
+    });
+    const data = await res.json();
+    sha = data.content.sha; // update SHA
+    loadProducts(); // reload table
+  } catch (err) {
+    console.error("Error saving products:", err);
+  }
 }
 
-/* LOGOUT */
-function logout() {
-  localStorage.removeItem("loggedIn");
-  window.location.href = "login.html";
+// ================== ADD / EDIT PRODUCT ==================
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const name = document.getElementById("name").value.trim();
+  const quantity = Number(document.getElementById("quantity").value);
+  const expiry = document.getElementById("expiry").value;
+
+  const products = await loadProducts();
+
+  if (editId) {
+    // EDIT existing product
+    const index = products.findIndex(p => p.id === editId);
+    products[index] = { ...products[index], name, quantity, expiry };
+    editId = null;
+  } else {
+    // ADD new product
+    const id = Date.now();
+    products.push({ id, name, quantity, expiry });
+  }
+
+  form.reset();
+  saveProducts(products);
+});
+
+// ================== EDIT PRODUCT ==================
+async function editProduct(id) {
+  const products = await loadProducts();
+  const p = products.find(p => p.id === id);
+  document.getElementById("name").value = p.name;
+  document.getElementById("quantity").value = p.quantity;
+  document.getElementById("expiry").value = p.expiry;
+  editId = id;
 }
+
+// ================== DELETE PRODUCT ==================
+async function deleteProduct(id) {
+  if (!confirm("Are you sure you want to delete this product?")) return;
+  const products = await loadProducts();
+  const updated = products.filter(p => p.id !== id);
+  saveProducts(updated, "Delete product");
+}
+
+// ================== INITIAL LOAD ==================
+loadProducts();
