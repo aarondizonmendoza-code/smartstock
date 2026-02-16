@@ -2,7 +2,7 @@
 const owner = "aarondizonmendoza-code";
 const repo = "smartstock";
 const path = "products.json";
-const token = "YOUR_GITHUB_PAT"; // Replace with your GitHub token
+const token = "YOUR_GITHUB_PAT"; // Replace with your GitHub Personal Access Token
 const apiURL = https://api.github.com/repos/${owner}/${repo}/contents/${path};
 
 const form = document.getElementById("productForm");
@@ -70,13 +70,20 @@ async function saveProducts(products, message = "Update products") {
       },
       body: JSON.stringify({
         message: message,
-        content: btoa(JSON.stringify(products, null, 2)), // encode JSON to base64
+        content: btoa(JSON.stringify(products, null, 2)), // encode JSON
         sha: sha
       })
     });
+
     const data = await res.json();
-    sha = data.content.sha; // update SHA
-    loadProducts(); // reload table
+
+    if (data.content && data.content.sha) {
+      sha = data.content.sha; // update SHA
+      // reload table after GitHub confirms update
+      await loadProducts();
+    } else {
+      console.error("GitHub did not return updated content:", data);
+    }
   } catch (err) {
     console.error("Error saving products:", err);
   }
