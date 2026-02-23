@@ -29,8 +29,7 @@ signupForm.addEventListener("submit", function (e) {
   window.location.href = "login.html";
 });
 
-
-// Show / Hide Password
+// optional show/hide password
 const togglePassword = document.getElementById("togglePassword");
 const passwordField = document.getElementById("password");
 
