@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SmartStock Inventory System</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="style.css">
+
+  <script>
+    if (localStorage.getItem("loggedIn") !== "true") {
+      window.location.href = "login.html";
+    }
+  </script>
+</head>
+<body>
+
+<header class="header">
+  <h1>📦 SmartStock Inventory</h1>
+  <button class="logout-btn" onclick="logout()">Logout</button>
+</header>
+
+<main class="container">
+
+  <!-- Product Form Section -->
+  <section class="form-section">
+    <h2>Add / Update Product</h2>
+
+    <form id="productForm">
+      <label>Product Name</label>
+      <input type="text" id="name" required>
+
+      <label>Quantity</label>
+      <input type="number" id="quantity" min="0" required>
+
+      <label>Expiry Date</label>
+      <input type="date" id="expiry" required>
+
+      <button type="submit">Save Product</button>
+    </form>
+  </section>
+
+  <!-- Inventory Table Section -->
+  <section class="table-section">
+    <h2>Inventory List</h2>
+
+    <!-- Search Bar -->
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search product..."
+      onkeyup="displayProducts()"
+    />
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Expiry</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="productTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>SmartStock © 2026</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
