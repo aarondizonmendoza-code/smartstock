@@ -1,20 +1,29 @@
-const form = document.getElementById("loginForm");
-const error = document.getElementById("error");
+const loginForm = document.getElementById("loginForm");
 
-// DEMO ACCOUNT
-const correctUsername = "admin";
-const correctPassword = "1234";
-
-form.addEventListener("submit", function (e) {
+loginForm.addEventListener("submit", function (e) {
   e.preventDefault();
 
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
 
-  if (username === correctUsername && password === correctPassword) {
-    localStorage.setItem("loggedIn", "true");
-    window.location.href = "index.html";
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+
+  const user = users.find(
+    user => user.email === email && user.password === password
+  );
+
+  if (user) {
+    alert("Login successful!");
+    window.location.href = "dashboard.html";
   } else {
-    error.textContent = "Invalid username or password";
+    alert("Invalid email or password!");
   }
+});
+
+// Show / Hide Password
+const toggleLoginPassword = document.getElementById("toggleLoginPassword");
+const loginPasswordField = document.getElementById("loginPassword");
+
+toggleLoginPassword.addEventListener("change", function () {
+  loginPasswordField.type = loginPasswordField.type === "password" ? "text" : "password";
 });
